@@ -155,6 +155,7 @@ int eliminacaoGauss(SistLinear_t *SL, real_t *x, int pivotamento)
   }
 
   resolucaoRetroativa(SL, x);
+  double normaL2 = normaL2Residuo(SL, x);
 
   return (0);
 }
@@ -262,8 +263,8 @@ int gaussJacobi(SistLinear_t *SL, real_t *x, real_t erro)
       x[i] /= SL->A[i * SL->n + i];
     }
 
+		double normaL2 = normaL2Residuo(SL, x);
     erro = calculaErro(x, tmpX, SL->n);
-
     iter++;
 
   } while (fabs(erro) >= erro && iter < MAXIT); // Partial column pivot (based on alpha value).
@@ -363,7 +364,7 @@ int gaussSeidel(SistLinear_t *SL, real_t *x, real_t erro)
       x[i] /= SL->A[i * SL->n + i];
     }
 
-    // *normaL2 = normaL2Residuo(SL);
+    double normaL2 = normaL2Residuo(SL, x);
     erro = calculaErro(x, tmpX, SL->n);
     iter++;
   } while (fabs(erro) >= erro && iter < MAXIT);
