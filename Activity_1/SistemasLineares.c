@@ -263,7 +263,7 @@ int gaussJacobi(SistLinear_t *SL, real_t *x, real_t erro)
       x[i] /= SL->A[i * SL->n + i];
     }
 
-		double normaL2 = normaL2Residuo(SL, x);
+    double normaL2 = normaL2Residuo(SL, x);
     erro = calculaErro(x, tmpX, SL->n);
     iter++;
 

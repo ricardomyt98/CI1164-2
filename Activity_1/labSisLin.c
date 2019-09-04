@@ -5,12 +5,10 @@
 #include "utils.h"
 #include "SistemasLineares.h"
 
-int main ()
+int main()
 {
-    // inicializa gerador de nr aleatoreos
-    srand(20192);
-    
+  // inicializa gerador de nr aleatoreos
+  srand(20192);
+
   SistLinear_t *SL;
-
 }
-
