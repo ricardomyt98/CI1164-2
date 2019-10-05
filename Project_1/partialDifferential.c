@@ -8,31 +8,27 @@
 #define M_PI 3.14159265358979323846
 #define SQR_PI M_PI *M_PI
 
-#define HIGHER_VALUE(x, y) x > y ? x : y
-#define LESSER_VALUE(x, y) x < y ? x : y
+// #define I_JM_FUNCTION (hx, hy, sqrHx, sqrHy) - 1 * (sqrHx * (2 + hy))                      // [i, j - 1]
+// #define IM_J_FUNCTION (hx, hy, sqrHx, sqrHy)(sqrHy * (hx - 2))                             // [i - 1, j]
+// #define I_J_FUNCTION (hx, hy, sqrHx, sqrHy)(4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)  // [i, j]
+// #define IP_J_FUNCTION (hx, hy, sqrHx, sqrHy) - 1 * (sqrHy * (2 + hx))                      // [i + 1, j]
+// #define I_JP_FUNCTION (hx, hy, sqrHx, sqrHy) sqrHx *(hy - 2)                               // [i, j + 1]
 
-#define X_Y_FUNCTION(lin, col) (4 * SQR_PI) * ((sin(2 * M_PI * lin) * sinh(M_PI * col)) + (sin(2 * M_PI * (M_PI - lin)) * (sinh(M_PI * (M_PI - col)))))
+#define X_Y_FUNCTION(i, j) (4 * SQR_PI) * ((sin(2 * M_PI * i) * sinh(M_PI * j)) + (sin(2 * M_PI * (M_PI - i)) * (sinh(M_PI * (M_PI - j)))))
 
 linearSystem initLinearSystem(int nx, int ny) {
     linearSystem linSys;
 
-    linSys.ssd = malloc(LESSER_VALUE(nx, ny) * sizeof(real_t));
-    linSys.sd = malloc(LESSER_VALUE(nx, ny) * sizeof(real_t));
-    linSys.md = malloc(HIGHER_VALUE(nx, nx) * sizeof(real_t));
-    linSys.id = malloc(LESSER_VALUE(nx, ny) * sizeof(real_t));
-    linSys.iid = malloc(LESSER_VALUE(nx, ny) * sizeof(real_t));
+    linSys.ssd = malloc((nx * ny) * sizeof(real_t));
+    linSys.sd = malloc((nx * ny) * sizeof(real_t));
+    linSys.md = malloc((nx * ny) * sizeof(real_t));
+    linSys.id = malloc((nx * ny) * sizeof(real_t));
+    linSys.iid = malloc((nx * ny) * sizeof(real_t));
 
-    linSys.b = malloc(ny * sizeof(real_t));
+    linSys.b = malloc(n(nx * ny) * sizeof(real_t));
 
     linSys.nx = nx;
     linSys.ny = ny;
-
-    linSys.idxSsd = 0;
-    linSys.idxSd = 0;
-    linSys.idxMd = 0;
-    linSys.idxId = 0;
-    linSys.idxIid = 0;
-    linSys.idxB = 0;
 
     return linSys;
 }
@@ -46,135 +42,61 @@ void setLinearSystem(linearSystem *linSys) {
     sqrHx = hx * hx;
     sqrHy = hy * hy;
 
-    for (int lin = 1; lin < linSys->nx; lin++) {
-        for (int col = 1; col < linSys->nx; col++) {
-            if (lin + 2 == col) {  // Superior superior
-                if (lin == 1 && col == 3) {
-                    linSys->ssd[linSys->idxSsd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->ssd[linSys->idxSsd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->ssd[linSys->idxSsd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->ssd[linSys->idxSsd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
+    // ------------------------------------------------ FILL A DIAGONAL MATRIX ------------------------------------------------
 
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * (M_PI - lin)) * sinh(SQR_PI));
-                } else if (lin == linSys->nx - 1 && col == linSys->ny - 3) {
-                    linSys->ssd[linSys->idxSsd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->ssd[linSys->idxSsd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->ssd[linSys->idxSsd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->ssd[linSys->idxSsd++] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                         // [i + 1, j]
+    // Superior superior diagonal.
+    for (int i = linSys->nx * linSys->nx; i > linSys->nx; i--) {
+        linSys->ssd[i] = 0;
+    }
+    for (int i = 0; i < (linSys->nx * linSys->ny) - linSys->nx; i++) {
+        linSys->ssd[i] = sqrHx * (hy - 2);
+    }
 
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                } else {                                                                                              // middle
-                    linSys->ssd[linSys->idxSsd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->ssd[linSys->idxSsd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->ssd[linSys->idxSsd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->ssd[linSys->idxSsd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->ssd[linSys->idxSsd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
+    // Superior diagonal.
+    linSys->sd[linSys->nx * linSys->ny] = 0;
+    for (int i = 0; i < (linSys->nx * linSys->ny) - 1; i++) {
+        linSys->sd[i] = -1 * (sqrHy * (2 + hx));
+    }
 
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                }
-            } else if (lin + 1 == col) {  // superior
-                if (lin == 1 && col == 2) {
-                    linSys->sd[linSys->idxSd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->sd[linSys->idxSd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->sd[linSys->idxSd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->sd[linSys->idxSd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
+    // Main diagonal
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        linSys->md[i] = (4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx);
+    }
 
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * (M_PI - lin)) * sinh(SQR_PI));
+    // Inferior diagonal
+    linSys->id[0] = 0;
+    for (int i = 1; i < linSys->nx * linSys->ny; i++) {
+        linSys->id[i] = sqrHy * (hx - 2);
+    }
 
-                } else if (lin == linSys->nx - 1 && col == linSys->ny - 2) {
-                    linSys->sd[linSys->idxSd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->sd[linSys->idxSd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->sd[linSys->idxSd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->sd[linSys->idxSd++] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                         // [i + 1, j]
+    // Inferior inferior diagonal
+    for (int i = 0; i < linSys->nx; i++) {
+        linSys->iid[i] = 0;
+    }
+    for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
+        linSys->iid[i] = -1 * (sqrHx * (2 + hy));
+    }
 
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
+    // ------------------------------------------------ FILL B ARRAY ------------------------------------------------
 
-                } else {                                                                                            // middle
-                    linSys->sd[linSys->idxSd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->sd[linSys->idxSd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->sd[linSys->idxSd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->sd[linSys->idxSd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->sd[linSys->idxSd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
+    int idxB = 0;
 
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                }
-            } else if (lin == col) {  // main
-                if (lin == 1 && col == 1) {
-                    linSys->md[linSys->idxMd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->md[linSys->idxMd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->md[linSys->idxMd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
+    for (int j = 1; j < linSys->ny; j++) {
+        for (int i = 1; i < linSys->nx; i++) {
+            if (j == 1 && (i != 1 && i != linSys->ny)) {
+                linSys->b[idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
+            }
 
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * (M_PI - lin)) * sinh(SQR_PI));
+            if (j == linSys->nx && (i != 1 && i != linSys->ny)) {
+                linSys->b[idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
+            }
 
-                } else if (lin == linSys->nx - 1 && col == linSys->ny - 1) {
-                    linSys->md[linSys->idxMd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->md[linSys->idxMd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->md[linSys->idxMd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->md[linSys->idxMd++] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                         // [i + 1, j]
+            if (i == 1) {
+                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * (M_PI - i)) * sinh(SQR_PI));  // Para a primeira linha, b sempre será subtraido uma mesms contante (U(x, 0)).
+            }
 
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * lin) * senh(SQR_PI));
-
-                } else {                                                                                            // middle
-                    linSys->md[linSys->idxMd] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->md[linSys->idxMd] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->md[linSys->idxMd] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->md[linSys->idxMd] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->md[linSys->idxMd++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                }
-            } else if (lin == col + 1) {  // inferior
-                if (lin == 2 && col == 1) {
-                    linSys->id[linSys->idxId] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->id[linSys->idxId] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->id[linSys->idxId] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->id[linSys->idxId++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-
-                } else if (lin == linSys->nx - 2 && col == linSys->ny - 1) {
-                    linSys->id[linSys->idxId] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->id[linSys->idxId] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->id[linSys->idxId] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->id[linSys->idxId++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * lin) * senh(SQR_PI));
-
-                } else {                                                                                            // middle
-                    linSys->id[linSys->idxId] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->id[linSys->idxId] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->id[linSys->idxId] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->id[linSys->idxId] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->id[linSys->idxId++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                }
-            } else if (lin == col + 2) {  // inferior inferior
-                if (lin == 3 && col == 1) {
-                    linSys->iid[linSys->idxIid] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->iid[linSys->idxIid] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->iid[linSys->idxIid] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->iid[linSys->idxIid++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-
-                } else if (lin == linSys->ny - 1 && col == linSys->nx - 3) {
-                    linSys->iid[linSys->idxIid] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->iid[linSys->idxIid] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->iid[linSys->idxIid] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->iid[linSys->idxIid++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col)) - (sin(2 * M_PI * lin) * senh(SQR_PI));
-
-                } else {                                                                                              // middle
-                    linSys->iid[linSys->idxIid] = (-sqrHx * (2 + hy)) * (U[lin][col - 1]);                            // [i, j - 1]
-                    linSys->iid[linSys->idxIid] += (sqrHy * (hx - 2)) * (U[lin - 1][col]);                            // [i - 1, j]
-                    linSys->iid[linSys->idxIid] += ((4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)) * (U[lin][col]);  // [i, j]
-                    linSys->iid[linSys->idxIid] += (-sqrHy * (2 + hx)) * (U[lin + 1][col]);                           // [i + 1, j]
-                    linSys->iid[linSys->idxIid++] += (sqrHx * (hy - 2)) * (U[lin][col + 1]);                          // [i, j + 1]
-
-                    linSys->b[linSys->idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(lin, col);
-                }
+            if (i == linSys->ny) {
+                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * i) * senh(SQR_PI));  // Para a última linha, b sempre será subtraido uma mesms contante (U(x, M_PI)).
             }
         }
     }

@@ -10,7 +10,7 @@ typedef struct linearSystem {
     real_t *id;   // Inferior diagonal.
     real_t *iid;  // Inferior inferior diagonal.
     real_t *b;    // Independent terms.
-    int nx, ny, idxSsd, idxSd, idxMd, idxId, idxIid, idxB;
+    int nx, ny;
 } linearSystem;
 
 linearSystem initLinearSystem(int nx, int ny);
