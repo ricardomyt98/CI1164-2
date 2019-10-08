@@ -29,7 +29,6 @@ linearSystem initLinearSystem(int nx, int ny) {
     linSys.b = malloc((nx * ny) * sizeof(real_t));
 
     linSys.x = malloc((nx * ny) * sizeof(real_t));
-    memset(linSys.x, 0, (linSys.nx * linSys.ny) * sizeof(real_t));  // Initial solution (zero).
 
     linSys.nx = nx;
     linSys.ny = ny;
@@ -44,6 +43,8 @@ linearSystem initLinearSystem(int nx, int ny) {
  */
 void setLinearSystem(linearSystem *linSys) {
     real_t fxy, hx, hy, sqrHx, sqrHy;
+
+    memset(linSys->x, 0.0, (linSys->nx * linSys->ny) * sizeof(real_t));  // Initial solution (zero).
 
     hx = M_PI / (linSys->nx + 1);
     hy = M_PI / (linSys->ny + 1);
