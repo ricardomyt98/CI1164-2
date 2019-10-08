@@ -4,18 +4,19 @@
 #include <string.h>
 
 #include "partialDifferential.h"
+#include "utils.h"
 
 #define M_PI 3.14159265358979323846
 #define SQR_PI M_PI *M_PI
-
-// #define I_JM_FUNCTION (hx, hy, sqrHx, sqrHy) - 1 * (sqrHx * (2 + hy))                      // [i, j - 1]
-// #define IM_J_FUNCTION (hx, hy, sqrHx, sqrHy)(sqrHy * (hx - 2))                             // [i - 1, j]
-// #define I_J_FUNCTION (hx, hy, sqrHx, sqrHy)(4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx)  // [i, j]
-// #define IP_J_FUNCTION (hx, hy, sqrHx, sqrHy) - 1 * (sqrHy * (2 + hx))                      // [i + 1, j]
-// #define I_JP_FUNCTION (hx, hy, sqrHx, sqrHy) sqrHx *(hy - 2)                               // [i, j + 1]
-
 #define X_Y_FUNCTION(i, j) (4 * SQR_PI) * ((sin(2 * M_PI * i) * sinh(M_PI * j)) + (sin(2 * M_PI * (M_PI - i)) * (sinh(M_PI * (M_PI - j)))))
 
+/**
+ * @brief Function to allocate space in memory.
+ *
+ * @param nx Number of points in x.
+ * @param ny Number of points in y.
+ * @return linearSystem Linear system struct.
+ */
 linearSystem initLinearSystem(int nx, int ny) {
     linearSystem linSys;
 
@@ -25,7 +26,10 @@ linearSystem initLinearSystem(int nx, int ny) {
     linSys.id = malloc((nx * ny) * sizeof(real_t));
     linSys.iid = malloc((nx * ny) * sizeof(real_t));
 
-    linSys.b = malloc(n(nx * ny) * sizeof(real_t));
+    linSys.b = malloc((nx * ny) * sizeof(real_t));
+
+    linSys.x = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.x, 0, (linSys.nx * linSys.ny) * sizeof(real_t));  // Initial solution (zero).
 
     linSys.nx = nx;
     linSys.ny = ny;
@@ -33,6 +37,11 @@ linearSystem initLinearSystem(int nx, int ny) {
     return linSys;
 }
 
+/**
+ * @brief Set the Linear System object
+ *
+ * @param linSys Linear system struct.
+ */
 void setLinearSystem(linearSystem *linSys) {
     real_t fxy, hx, hy, sqrHx, sqrHy;
 
@@ -45,7 +54,7 @@ void setLinearSystem(linearSystem *linSys) {
     // ------------------------------------------------ FILL A DIAGONAL MATRIX ------------------------------------------------
 
     // Superior superior diagonal.
-    for (int i = linSys->nx * linSys->nx; i > linSys->nx; i--) {
+    for (int i = linSys->nx * linSys->ny; i > linSys->nx; i--) {
         linSys->ssd[i] = 0;
     }
     for (int i = 0; i < (linSys->nx * linSys->ny) - linSys->nx; i++) {
@@ -96,8 +105,50 @@ void setLinearSystem(linearSystem *linSys) {
             }
 
             if (i == linSys->ny) {
-                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * i) * senh(SQR_PI));  // Para a última linha, b sempre será subtraido uma mesms contante (U(x, M_PI)).
+                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * i) * sinh(SQR_PI));  // Para a última linha, b sempre será subtraido uma mesms contante (U(x, M_PI)).
             }
         }
+    }
+}
+
+/**
+ * @brief Gauss Seidel function.
+ *
+ * @param linSys Linear system struct.
+ * @param it Number of max iterations.
+ */
+void gaussSeidel(linearSystem *linSys, int *it) {
+    real_t bk, itTime;
+    int k = 1, i;
+
+    // itTime = timestamp();
+    // itTime = timestamp() - itTime;
+
+    for (int k = 0; k < *(it); k++) {
+        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+            bk = linSys->b[i];
+
+            if (i - 1 >= 0) {
+                bk -= linSys->id[i] * linSys->x[i - 1];
+            }
+
+            if (i + 1 < linSys->nx * linSys->ny - 1) {
+                bk -= linSys->sd[i] * linSys->x[i + 1];
+            }
+
+            if (i - linSys->nx >= 0) {
+                bk -= linSys->iid[i] * linSys->x[i - linSys->nx];
+            }
+
+            if (i + linSys->nx >= linSys->nx * linSys->ny - 1) {
+                bk -= linSys->ssd[i] * linSys->x[i + linSys->nx];
+            }
+
+            linSys->x[i] = bk / linSys->md[i];
+        }
+
+        printf("%lf", linSys->x[i]);
+
+        // L2 norm.
     }
 }
