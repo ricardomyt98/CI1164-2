@@ -42,7 +42,7 @@ linearSystem initLinearSystem(int nx, int ny) {
  * @param linSys Linear system struct.
  */
 void setLinearSystem(linearSystem *linSys) {
-    real_t fxy, hx, hy, sqrHx, sqrHy;
+    real_t hx, hy, sqrHx, sqrHy;
 
     memset(linSys->x, 0.0, (linSys->nx * linSys->ny) * sizeof(real_t));  // Initial solution (zero).
 
@@ -147,8 +147,6 @@ void gaussSeidel(linearSystem *linSys, int *it) {
 
             linSys->x[i] = bk / linSys->md[i];
         }
-
-        printf("%lf", linSys->x[i]);
 
         // L2 norm.
     }

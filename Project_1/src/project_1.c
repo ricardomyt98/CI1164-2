@@ -37,38 +37,32 @@ int main(int argc, char* argv[]) {
         setLinearSystem(&linSys);
 
         printf("Inferior afastada\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.iid[i]);
         }
-        
+
         printf("Inferior\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.id[i]);
         }
-       
+
         printf("Principal\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.md[i]);
         }
-        
+
         printf("Superior\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.sd[i]);
         }
-        
+
         printf("Superior superior\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.ssd[i]);
         }
 
         printf("Vetor b\n\n");
-        for (int i = 0; i<linSys.nx*linSys.ny; i++)
-        {
+        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
             printf("%lf \n", linSys.b[i]);
         }
 
