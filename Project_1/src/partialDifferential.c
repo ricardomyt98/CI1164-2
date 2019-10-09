@@ -116,19 +116,120 @@ void setLinearSystem(linearSystem *linSys) {
 }
 
 /**
+ * @brief
+ *
+ * @param linSys
+ * @param res vetor residuo
+ * @return real_t
+ */
+real_t l2Norm(linearSystem *linSys, real_t *res) {
+    real_t *aux = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        aux[i] = linSys->b[i];
+    }
+
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        if (i - 1 >= 0) {
+            aux[i] -= linSys->id[i] * linSys->x[i - 1];
+        }
+
+        if (i + 1 < linSys->nx * linSys->ny) {
+            aux[i] -= linSys->sd[i] * linSys->x[i + 1];
+        }
+
+        if (i - linSys->nx >= 0) {
+            aux[i] -= linSys->iid[i] * linSys->x[i - linSys->nx];
+        }
+
+        if (i + linSys->nx < linSys->nx * linSys->ny) {
+            aux[i] -= linSys->ssd[i] * linSys->x[i + linSys->nx];
+        }
+
+        res[i] = aux[i];
+    }
+
+    real_t result = 0.0;
+
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        result += aux[i] * aux[i];
+    }
+
+    return sqrt(result);
+}
+
+void printOutput(linearSystem *linSys, FILE *output) {
+    int idxI, idxJ;
+    real_t hx, hy;
+
+    idxI = 0;
+    idxJ = 0;
+    hx = M_PI / (linSys->nx + 1);
+    hy = M_PI / (linSys->ny + 1);
+
+    fprintf(output, "---- Valores da função em cada ponto da grade ----\n");
+
+    if (output) {
+        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+            fprintf(output, "(%lf, %lf) = %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
+        }
+    } else {
+        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+            printf("(%lf, %lf) = %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
+        }
+    }
+}
+
+void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_t *arrayL2Norm, real_t *arrayResidue, FILE *output, int it) {
+    real_t avrgTime = 0.0;
+
+    fprintf(output, "###########\n");
+
+    for (int i = 0; i < it; i++) {
+        avrgTime += arrayItTime[i];
+    }
+
+    avrgTime /= it;
+
+    fprintf(output, "# Tempo Método GS: %lfms\n", avrgTime);
+    fprintf(output, "#\n");
+
+    // ----------------------------------------------- Residue -----------------------------------------------
+    fprintf(output, "# Resíduo\n");
+
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        fprintf(output, "#i = %d : %lf\n", i, arrayResidue[i]);
+    }
+
+    fprintf(output, "#\n");
+
+    // ----------------------------------------------- L2 Norm -----------------------------------------------
+
+    fprintf(output, "# Norma L2 do Residuo\n");
+
+    for (int i = 0; i < it; i++) {
+        fprintf(output, "#i = %d : %lf\n", i, arrayL2Norm[i]);
+    }
+
+    fprintf(output, "###########\n\n");
+}
+
+/**
  * @brief Gauss Seidel function.
  *
  * @param linSys Linear system struct.
  * @param it Number of max iterations.
  */
-void gaussSeidel(linearSystem *linSys, int *it) {
-    real_t bk, itTime;
-    int k = 1, i;
+void gaussSeidel(linearSystem *linSys, int *it, FILE *output) {
+    real_t bk, itTime, *arrayL2Norm, *arrayItTime, *arrayResidue;
 
-    // itTime = timestamp();
-    // itTime = timestamp() - itTime;
+    int k = 1, i;
+    arrayItTime = malloc(*it * sizeof(real_t));
+    arrayL2Norm = malloc(*it * sizeof(real_t));
+    arrayResidue = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
     for (int k = 0; k < *(it); k++) {
+        itTime = timestamp();
         for (int i = 0; i < linSys->nx * linSys->ny; i++) {
             bk = linSys->b[i];
 
@@ -151,6 +252,9 @@ void gaussSeidel(linearSystem *linSys, int *it) {
             linSys->x[i] = bk / linSys->md[i];
         }
 
-        // L2 norm.
+        arrayItTime[k] = timestamp() - itTime;
+        arrayL2Norm[k] = l2Norm(linSys, arrayResidue);
     }
+
+    printGaussSeidelParameters(linSys, arrayItTime, arrayL2Norm, arrayResidue, output, *it);
 }

@@ -18,6 +18,12 @@ linearSystem initLinearSystem(int nx, int ny);
 
 void setLinearSystem(linearSystem *linSys);
 
-void gaussSeidel(linearSystem *linSys, int *it);
+void gaussSeidel(linearSystem *linSys, int *it, FILE *output);
+
+void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_t *arrayL2Norm, real_t *arrayResidue, FILE *output, int it);
+
+real_t l2Norm(linearSystem *linSys, real_t *res);
+
+void printOutput(linearSystem *linSys, FILE *output);
 
 #endif  // __PARTIAL_DIFFERENTIAL__

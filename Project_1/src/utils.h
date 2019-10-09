@@ -6,6 +6,4 @@
 
 double timestamp(void);
 
-void outputPrinter();
-
 #endif  // __UTILS_H__

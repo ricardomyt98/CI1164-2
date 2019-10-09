@@ -10,6 +10,3 @@ double timestamp(void) {
     gettimeofday(&tp, NULL);
     return ((double)(tp.tv_sec * 1000.0 + tp.tv_usec / 1000.0));
 }
-
-void outputPrinter() {
-}
