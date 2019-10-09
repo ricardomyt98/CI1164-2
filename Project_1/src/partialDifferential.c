@@ -91,23 +91,26 @@ void setLinearSystem(linearSystem *linSys) {
 
     int idxB = 0;
 
-    for (int j = 1; j < linSys->ny; j++) {
-        for (int i = 1; i < linSys->nx; i++) {
-            if (j == 1 && (i != 1 && i != linSys->ny)) {
-                linSys->b[idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
-            }
-
-            if (j == linSys->nx && (i != 1 && i != linSys->ny)) {
-                linSys->b[idxB++] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
+    for (int j = 1; j <= linSys->ny; j++) {
+        for (int i = 1; i <= linSys->nx; i++) {
+            linSys->b[idxB] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
+            if (j == 1) {
+                linSys->b[idxB] -= sin(2 * M_PI * (M_PI - i)) * sinh(SQR_PI);
             }
 
             if (i == 1) {
-                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * (M_PI - i)) * sinh(SQR_PI));  // Para a primeira linha, b sempre será subtraido uma mesms contante (U(x, 0)).
+                linSys->b[idxB] -= 0;
             }
 
-            if (i == linSys->ny) {
-                linSys->b[idxB++] = ((2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy)) - (sin(2 * M_PI * i) * sinh(SQR_PI));  // Para a última linha, b sempre será subtraido uma mesms contante (U(x, M_PI)).
+            if (j == linSys->ny) {
+                linSys->b[idxB] -= sin(2 * M_PI * i) * sinh(SQR_PI);
             }
+
+            if (i == linSys->nx) {
+                linSys->b[idxB] -= 0;
+            }
+
+            idxB++;
         }
     }
 }
@@ -133,7 +136,7 @@ void gaussSeidel(linearSystem *linSys, int *it) {
                 bk -= linSys->id[i] * linSys->x[i - 1];
             }
 
-            if (i + 1 < linSys->nx * linSys->ny - 1) {
+            if (i + 1 < linSys->nx * linSys->ny) {
                 bk -= linSys->sd[i] * linSys->x[i + 1];
             }
 
@@ -141,7 +144,7 @@ void gaussSeidel(linearSystem *linSys, int *it) {
                 bk -= linSys->iid[i] * linSys->x[i - linSys->nx];
             }
 
-            if (i + linSys->nx >= linSys->nx * linSys->ny - 1) {
+            if (i + linSys->nx < linSys->nx * linSys->ny) {
                 bk -= linSys->ssd[i] * linSys->x[i + linSys->nx];
             }
 

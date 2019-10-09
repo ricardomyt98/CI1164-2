@@ -36,34 +36,41 @@ int main(int argc, char* argv[]) {
 
         setLinearSystem(&linSys);
 
-        printf("Inferior afastada\n\n");
-        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.iid[i]);
-        }
+        gaussSeidel(&linSys, &it);
 
-        printf("Inferior\n\n");
-        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.id[i]);
-        }
+        // printf("Inferior afastada\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.iid[i]);
+        // }
 
-        printf("Principal\n\n");
-        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.md[i]);
-        }
+        // printf("Inferior\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.id[i]);
+        // }
 
-        printf("Superior\n\n");
-        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.sd[i]);
-        }
+        // printf("Principal\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.md[i]);
+        // }
 
-        printf("Superior superior\n\n");
-        for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.ssd[i]);
-        }
+        // printf("Superior\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.sd[i]);
+        // }
 
-        printf("Vetor b\n\n");
+        // printf("Superior superior\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.ssd[i]);
+        // }
+
+        // printf("Vetor b\n\n");
+        // for (int i = 0; i < linSys.nx * linSys.ny; i++) {
+        //     printf("%lf \n", linSys.b[i]);
+        // }
+
+        printf("Vetor solução.\n\n");
         for (int i = 0; i < linSys.nx * linSys.ny; i++) {
-            printf("%lf \n", linSys.b[i]);
+            printf("%lf\n", linSys.x[i]);
         }
 
     } else {

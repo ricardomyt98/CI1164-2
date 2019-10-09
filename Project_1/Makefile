@@ -1,27 +1,17 @@
-    CC     = gcc -g
+# This target will compile all the file.
+all: pdeSolver
 
-    CFLAGS = -std=c11
-    LFLAGS = -lm
+pdeSolver.o: main.o partialDifferential.o utils.o
+	gcc -c main.o partialDifferential.o utils.o -lm -o pdeSolver
 
-      PROG = pdeSolver
-      OBJS = project_1.o \
-	  		 utils.o \
-             partialDifferential.o
+main.o: ./src/main.c
+	gcc -c ./src/main.c
 
-.PHONY: limpa faxina clean purge distclean all
+partialDifferential.o: ./src/partialDifferential.c
+	gcc -c ./src/partialDifferential.c
 
-%.o: %.c %.h utils.h
-	$(CC) -c $(CFLAGS) $<
+utils.o: ./src/utils.c
+	gcc -c ./src/utils.c
 
-$(PROG):  $(OBJS) $(PROG).o
-	$(CC) -o $@ $^ $(LFLAGS)
-
-doc:configura.doxygen $(files)
-	doxygen configura.doxygen
-
-limpa:
-	@rm -f *~ *.bak
-
-faxina:   clean
-	@rm -f *.o core a.out
-	@rm -f $(PROG)
+clean:
+	rm -rf *o pdeSolver
