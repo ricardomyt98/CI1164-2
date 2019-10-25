@@ -20,9 +20,9 @@ void setLinearSystem(linearSystem *linSys);
 
 void gaussSeidel(linearSystem *linSys, int *it, FILE *output);
 
-void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_t *arrayL2Norm, real_t *arrayResidue, FILE *output, int it);
+void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *output, int it);
 
-real_t l2Norm(linearSystem *linSys, real_t *res);
+real_t l2Norm(linearSystem *linSys);
 
 void printOutput(linearSystem *linSys, FILE *output);
 

@@ -5,10 +5,11 @@
 #include "partialDifferential.h"
 
 int main(int argc, char *argv[]) {
-    double nx, ny;
+    int nx, ny, it, arg;
     char *outputFileName;
-    int it, arg;
-    FILE *outputFile;
+    FILE *outputFile = NULL;
+
+    nx = ny = it = 0;
 
     for (arg = 1; arg < argc; arg++) {
         if (strcmp("-nx", argv[arg]) == 0) {
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (nx && ny && it && outputFile) {
+    if (nx > 0 && ny > 0 && it > 0) {
         linearSystem linSys = initLinearSystem(nx, ny);
 
         setLinearSystem(&linSys);

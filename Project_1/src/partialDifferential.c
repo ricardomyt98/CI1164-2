@@ -122,7 +122,7 @@ void setLinearSystem(linearSystem *linSys) {
  * @param res vetor residuo
  * @return real_t
  */
-real_t l2Norm(linearSystem *linSys, real_t *res) {
+real_t l2Norm(linearSystem *linSys) {
     real_t *aux = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
@@ -138,6 +138,9 @@ real_t l2Norm(linearSystem *linSys, real_t *res) {
             aux[i] -= linSys->sd[i] * linSys->x[i + 1];
         }
 
+        // TODO: Assumindo-se que é sempre quadrado.
+        aux[i] -= linSys->md[i] * linSys->x[i];
+
         if (i - linSys->nx >= 0) {
             aux[i] -= linSys->iid[i] * linSys->x[i - linSys->nx];
         }
@@ -145,8 +148,6 @@ real_t l2Norm(linearSystem *linSys, real_t *res) {
         if (i + linSys->nx < linSys->nx * linSys->ny) {
             aux[i] -= linSys->ssd[i] * linSys->x[i + linSys->nx];
         }
-
-        res[i] = aux[i];
     }
 
     real_t result = 0.0;
@@ -164,43 +165,44 @@ void printOutput(linearSystem *linSys, FILE *output) {
 
     idxI = 0;
     idxJ = 0;
+    // Verificar se realmente é "+1"
     hx = M_PI / (linSys->nx + 1);
     hy = M_PI / (linSys->ny + 1);
 
-    fprintf(output, "---- Valores da função em cada ponto da grade ----\n");
+    if (!output) {
+        output = stdout;
+    }
 
-    if (output) {
-        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-            fprintf(output, "(%lf, %lf) = %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
-        }
-    } else {
-        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-            printf("(%lf, %lf) = %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
-        }
+    // Superior superior diagonal.
+    for (int i = 0; i < (linSys->nx * linSys->ny) - linSys->nx; i++) {
+        fprintf(output, "%lf %lf %lf\n", (i + linSys->nx) * hx, i * hy, linSys->ssd[i]);
+    }
+
+    // Superior diagonal.
+    for (int i = 0; i < (linSys->nx * linSys->ny) - 1; i++) {
+        fprintf(output, "%lf %lf %lf\n", (i + 1) * hx, i * hy, linSys->sd[i]);
+    }
+
+    // Main diagonal
+    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+        fprintf(output, "%lf %lf %lf\n", i * hx, i * hy, linSys->md[i]);
+    }
+
+    // Inferior diagonal
+    for (int i = 1; i < linSys->nx * linSys->ny; i++) {
+        fprintf(output, "%lf %lf %lf\n", i * hx, (i + 1) * hy, linSys->id[i]);
+    }
+
+    // Inferior inferior diagonal
+    for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
+        fprintf(output, "%lf %lf %lf\n", i * hx, (i + linSys->nx) * hy, linSys->iid[i]);
     }
 }
 
-void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_t *arrayL2Norm, real_t *arrayResidue, FILE *output, int it) {
-    real_t avrgTime = 0.0;
-
+void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *output, int it) {
     fprintf(output, "###########\n");
 
-    for (int i = 0; i < it; i++) {
-        avrgTime += arrayItTime[i];
-    }
-
-    avrgTime /= it;
-
     fprintf(output, "# Tempo Método GS: %lfms\n", avrgTime);
-    fprintf(output, "#\n");
-
-    // ----------------------------------------------- Residue -----------------------------------------------
-    fprintf(output, "# Resíduo\n");
-
-    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "#i = %d : %lf\n", i, arrayResidue[i]);
-    }
-
     fprintf(output, "#\n");
 
     // ----------------------------------------------- L2 Norm -----------------------------------------------
@@ -211,7 +213,7 @@ void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_
         fprintf(output, "#i = %d : %lf\n", i, arrayL2Norm[i]);
     }
 
-    fprintf(output, "###########\n\n");
+    fprintf(output, "###########\n");
 }
 
 /**
@@ -221,10 +223,10 @@ void printGaussSeidelParameters(linearSystem *linSys, real_t *arrayItTime, real_
  * @param it Number of max iterations.
  */
 void gaussSeidel(linearSystem *linSys, int *it, FILE *output) {
-    real_t bk, itTime, *arrayL2Norm, *arrayItTime, *arrayResidue;
+    real_t bk, itTime, *arrayL2Norm, acumItTime, *arrayResidue;
 
     int k = 1, i;
-    arrayItTime = malloc(*it * sizeof(real_t));
+    acumItTime = 0.0;
     arrayL2Norm = malloc(*it * sizeof(real_t));
     arrayResidue = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
@@ -249,12 +251,17 @@ void gaussSeidel(linearSystem *linSys, int *it, FILE *output) {
                 bk -= linSys->ssd[i] * linSys->x[i + linSys->nx];
             }
 
-            linSys->x[i] = bk / linSys->md[i];
+            linSys->x[i] = bk;
+            linSys->x[i] /= linSys->md[i];
         }
 
-        arrayItTime[k] = timestamp() - itTime;
-        arrayL2Norm[k] = l2Norm(linSys, arrayResidue);
+        // TODO: acumulador de timestamp.
+        acumItTime += timestamp() - itTime;
+
+        arrayL2Norm[k] = l2Norm(linSys);
     }
 
-    printGaussSeidelParameters(linSys, arrayItTime, arrayL2Norm, arrayResidue, output, *it);
+    // TODO: Imprimir acumulador de timestamp dividido pelo it.
+
+    printGaussSeidelParameters(acumItTime / (*it), arrayL2Norm, output, *it);
 }
