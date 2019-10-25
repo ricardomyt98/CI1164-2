@@ -248,7 +248,6 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
 
             linSys->x[i] = bk;
             linSys->x[i] /= linSys->md[i];
-            printf("%lf\n", linSys->x[i]);
         }
 
         acumItTime += timestamp() - itTime;  //timestamp accumulator
