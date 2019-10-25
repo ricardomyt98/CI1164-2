@@ -116,10 +116,9 @@ void setLinearSystem(linearSystem *linSys) {
 }
 
 /**
- * @brief
+ * @brief Function to calculate L2 norm.
  *
- * @param linSys
- * @param res vetor residuo
+ * @param linSys Linear system struct.
  * @return real_t
  */
 real_t l2Norm(linearSystem *linSys) {
@@ -159,13 +158,19 @@ real_t l2Norm(linearSystem *linSys) {
     return sqrt(result);
 }
 
+/**
+ * @brief Function to print the discretization matrix.
+ *
+ * @param linSys LinearSystem structure
+ * @param output Output file.
+ */
 void printOutput(linearSystem *linSys, FILE *output) {
     int idxI, idxJ;
     real_t hx, hy;
 
     idxI = 0;
     idxJ = 0;
-    // Verificar se realmente é "+1"
+
     hx = M_PI / (linSys->nx + 1);
     hy = M_PI / (linSys->ny + 1);
 
@@ -174,10 +179,21 @@ void printOutput(linearSystem *linSys, FILE *output) {
     }
 
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "%lf %lf %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
+        fprintf(output, "%lf %lf %lf\n", idxI * hx, idxJ * hy, linSys->x[i]);
+
+        idxI++;
+        idxJ++;
     }
 }
 
+/**
+ * @brief Function to print Gauss Seidel parameters.
+ *
+ * @param avrgTime Average time.
+ * @param arrayL2Norm Array with all L2 norms.
+ * @param output Output file.
+ * @param it Number of iterations.
+ */
 void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *output, int it) {
     fprintf(output, "###########\n");
 
@@ -232,15 +248,13 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
 
             linSys->x[i] = bk;
             linSys->x[i] /= linSys->md[i];
+            printf("%lf\n", linSys->x[i]);
         }
 
-        // TODO: acumulador de timestamp.
-        acumItTime += timestamp() - itTime;
+        acumItTime += timestamp() - itTime;  //timestamp accumulator
 
         arrayL2Norm[k] = l2Norm(linSys);
     }
-
-    // TODO: Imprimir acumulador de timestamp dividido pelo it.
 
     printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
 }
