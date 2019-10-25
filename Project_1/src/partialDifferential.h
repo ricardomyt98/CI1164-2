@@ -18,7 +18,7 @@ linearSystem initLinearSystem(int nx, int ny);
 
 void setLinearSystem(linearSystem *linSys);
 
-void gaussSeidel(linearSystem *linSys, int *it, FILE *output);
+void gaussSeidel(linearSystem *linSys, int it, FILE *output);
 
 void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *output, int it);
 

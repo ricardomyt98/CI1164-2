@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
         setLinearSystem(&linSys);
 
-        gaussSeidel(&linSys, &it, outputFile);
+        gaussSeidel(&linSys, it, outputFile);
 
         printOutput(&linSys, outputFile);
 

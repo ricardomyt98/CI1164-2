@@ -65,7 +65,7 @@ void setLinearSystem(linearSystem *linSys) {
     // Superior diagonal.
     linSys->sd[linSys->nx * linSys->ny] = 0;
     for (int i = 0; i < (linSys->nx * linSys->ny) - 1; i++) {
-        linSys->sd[i] = -1 * (sqrHy * (2 + hx));
+        linSys->sd[i] = -sqrHy * (2 + hx);
     }
 
     // Main diagonal
@@ -84,7 +84,7 @@ void setLinearSystem(linearSystem *linSys) {
         linSys->iid[i] = 0;
     }
     for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
-        linSys->iid[i] = -1 * (sqrHx * (2 + hy));
+        linSys->iid[i] = -sqrHx * (2 + hy);
     }
 
     // ------------------------------------------------ FILL B ARRAY ------------------------------------------------
@@ -173,29 +173,8 @@ void printOutput(linearSystem *linSys, FILE *output) {
         output = stdout;
     }
 
-    // Superior superior diagonal.
-    for (int i = 0; i < (linSys->nx * linSys->ny) - linSys->nx; i++) {
-        fprintf(output, "%lf %lf %lf\n", (i + linSys->nx) * hx, i * hy, linSys->ssd[i]);
-    }
-
-    // Superior diagonal.
-    for (int i = 0; i < (linSys->nx * linSys->ny) - 1; i++) {
-        fprintf(output, "%lf %lf %lf\n", (i + 1) * hx, i * hy, linSys->sd[i]);
-    }
-
-    // Main diagonal
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "%lf %lf %lf\n", i * hx, i * hy, linSys->md[i]);
-    }
-
-    // Inferior diagonal
-    for (int i = 1; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "%lf %lf %lf\n", i * hx, (i + 1) * hy, linSys->id[i]);
-    }
-
-    // Inferior inferior diagonal
-    for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "%lf %lf %lf\n", i * hx, (i + linSys->nx) * hy, linSys->iid[i]);
+        fprintf(output, "%lf %lf %lf\n", idxI++ * hx, idxJ++ * hy, linSys->x[i]);
     }
 }
 
@@ -222,15 +201,15 @@ void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *outp
  * @param linSys Linear system struct.
  * @param it Number of max iterations.
  */
-void gaussSeidel(linearSystem *linSys, int *it, FILE *output) {
+void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
     real_t bk, itTime, *arrayL2Norm, acumItTime, *arrayResidue;
 
     int k = 1, i;
     acumItTime = 0.0;
-    arrayL2Norm = malloc(*it * sizeof(real_t));
+    arrayL2Norm = malloc(it * sizeof(real_t));
     arrayResidue = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
-    for (int k = 0; k < *(it); k++) {
+    for (int k = 0; k < it; k++) {
         itTime = timestamp();
         for (int i = 0; i < linSys->nx * linSys->ny; i++) {
             bk = linSys->b[i];
@@ -263,5 +242,5 @@ void gaussSeidel(linearSystem *linSys, int *it, FILE *output) {
 
     // TODO: Imprimir acumulador de timestamp dividido pelo it.
 
-    printGaussSeidelParameters(acumItTime / (*it), arrayL2Norm, output, *it);
+    printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
 }
