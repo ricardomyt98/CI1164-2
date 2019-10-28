@@ -24,6 +24,6 @@ void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *outp
 
 real_t l2Norm(linearSystem *linSys);
 
-void printOutput(linearSystem *linSys, FILE *output);
+void printMesh(linearSystem *linSys, FILE *output);
 
 #endif  // __PARTIAL_DIFFERENTIAL__

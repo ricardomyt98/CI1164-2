@@ -21,14 +21,24 @@ linearSystem initLinearSystem(int nx, int ny) {
     linearSystem linSys;
 
     linSys.ssd = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.ssd, 0.0, (nx * ny) * sizeof(real_t));
+
     linSys.sd = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.sd, 0.0, (nx * ny) * sizeof(real_t));
+
     linSys.md = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.md, 0.0, (nx * ny) * sizeof(real_t));
+
     linSys.id = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.id, 0.0, (nx * ny) * sizeof(real_t));
+
     linSys.iid = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.iid, 0.0, (nx * ny) * sizeof(real_t));
 
     linSys.b = malloc((nx * ny) * sizeof(real_t));
 
     linSys.x = malloc((nx * ny) * sizeof(real_t));
+    memset(linSys.x, 0.0, (nx * ny) * sizeof(real_t));
 
     linSys.nx = nx;
     linSys.ny = ny;
@@ -44,8 +54,6 @@ linearSystem initLinearSystem(int nx, int ny) {
 void setLinearSystem(linearSystem *linSys) {
     real_t hx, hy, sqrHx, sqrHy;
 
-    memset(linSys->x, 0.0, (linSys->nx * linSys->ny) * sizeof(real_t));  // Initial solution (zero).
-
     hx = M_PI / (linSys->nx + 1);
     hy = M_PI / (linSys->ny + 1);
 
@@ -55,17 +63,15 @@ void setLinearSystem(linearSystem *linSys) {
     // ------------------------------------------------ FILL A DIAGONAL MATRIX ------------------------------------------------
 
     // Superior superior diagonal.
-    for (int i = linSys->nx * linSys->ny; i > linSys->nx; i--) {
-        linSys->ssd[i] = 0;
-    }
     for (int i = 0; i < (linSys->nx * linSys->ny) - linSys->nx; i++) {
         linSys->ssd[i] = sqrHx * (hy - 2);
     }
 
     // Superior diagonal.
-    linSys->sd[linSys->nx * linSys->ny] = 0;
-    for (int i = 0; i < (linSys->nx * linSys->ny) - 1; i++) {
-        linSys->sd[i] = -sqrHy * (2 + hx);
+    for (int j = 0; j < linSys->ny; j++) {
+        for (int i = 1; i < linSys->nx - 1; i++) {
+            linSys->sd[j * linSys->nx + i] = -sqrHy * (2 + hx);
+        }
     }
 
     // Main diagonal
@@ -74,18 +80,27 @@ void setLinearSystem(linearSystem *linSys) {
     }
 
     // Inferior diagonal
-    linSys->id[0] = 0;
-    for (int i = 1; i < linSys->nx * linSys->ny; i++) {
-        linSys->id[i] = sqrHy * (hx - 2);
+    for (int j = 0; j < linSys->ny; j++) {
+        for (int i = 1; i < linSys->nx - 1; i++) {
+            linSys->id[j * linSys->nx + i] = sqrHy * (hx - 2);
+        }
     }
 
     // Inferior inferior diagonal
-    for (int i = 0; i < linSys->nx; i++) {
-        linSys->iid[i] = 0;
-    }
     for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
         linSys->iid[i] = -sqrHx * (2 + hy);
     }
+
+    // Debug print.
+    // printf("SUPERIOR\n");
+    // for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+    //     printf("%lf\n", linSys->sd[i]);
+    // }
+
+    // printf("\nINFERIOR\n");
+    // for (int i = 0; i < linSys->nx * linSys->ny; i++) {
+    //     printf("%lf\n", linSys->id[i]);
+    // }
 
     // ------------------------------------------------ FILL B ARRAY ------------------------------------------------
 
@@ -137,7 +152,6 @@ real_t l2Norm(linearSystem *linSys) {
             aux[i] -= linSys->sd[i] * linSys->x[i + 1];
         }
 
-        // TODO: Assumindo-se que é sempre quadrado.
         aux[i] -= linSys->md[i] * linSys->x[i];
 
         if (i - linSys->nx >= 0) {
@@ -164,12 +178,8 @@ real_t l2Norm(linearSystem *linSys) {
  * @param linSys LinearSystem structure
  * @param output Output file.
  */
-void printOutput(linearSystem *linSys, FILE *output) {
-    int idxI, idxJ;
+void printMesh(linearSystem *linSys, FILE *output) {
     real_t hx, hy;
-
-    idxI = 0;
-    idxJ = 0;
 
     hx = M_PI / (linSys->nx + 1);
     hy = M_PI / (linSys->ny + 1);
@@ -178,11 +188,12 @@ void printOutput(linearSystem *linSys, FILE *output) {
         output = stdout;
     }
 
-    for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-        fprintf(output, "%lf %lf %lf\n", idxI * hx, idxJ * hy, linSys->x[i]);
+    int k = 0;
 
-        idxI++;
-        idxJ++;
+    for (int j = 1; j < linSys->ny; j++) {
+        for (int i = 1; i < linSys->nx; i++) {
+            fprintf(output, "%lf %lf %lf\n", i * hx, j * hy, linSys->x[k++]);
+        }
     }
 }
 

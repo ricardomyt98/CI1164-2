@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
         gaussSeidel(&linSys, it, outputFile);
 
-        printOutput(&linSys, outputFile);
+        printMesh(&linSys, outputFile);
 
     } else {
         fprintf(stderr, "Argumentos incorretos. O formato deve ser: \"pdeSolver -nx <Nx> -ny <Ny> -i <maxIter> -o arquivo_saida\".\n");
