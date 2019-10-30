@@ -8,7 +8,7 @@
 
 #define M_PI 3.14159265358979323846
 #define SQR_PI M_PI *M_PI
-#define X_Y_FUNCTION(i, j) (4 * SQR_PI) * ((sin(2 * M_PI * i) * sinh(M_PI * j)) + (sin(2 * M_PI * (M_PI - i)) * (sinh(M_PI * (M_PI - j)))))
+#define X_Y_FUNCTION(i, j) (4 * SQR_PI) * ((sin(2 * M_PI * (i)) * sinh(M_PI * (j))) + (sin(2 * M_PI * (M_PI - (i))) * (sinh(M_PI * (M_PI - (j))))))
 
 /**
  * @brief Function to allocate space in memory.
@@ -20,24 +20,24 @@
 linearSystem initLinearSystem(int nx, int ny) {
     linearSystem linSys;
 
-    linSys.ssd = malloc((nx * ny) * sizeof(real_t));
+    linSys.ssd = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.ssd, 0.0, (nx * ny) * sizeof(real_t));
 
-    linSys.sd = malloc((nx * ny) * sizeof(real_t));
+    linSys.sd = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.sd, 0.0, (nx * ny) * sizeof(real_t));
 
-    linSys.md = malloc((nx * ny) * sizeof(real_t));
+    linSys.md = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.md, 0.0, (nx * ny) * sizeof(real_t));
 
-    linSys.id = malloc((nx * ny) * sizeof(real_t));
+    linSys.id = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.id, 0.0, (nx * ny) * sizeof(real_t));
 
-    linSys.iid = malloc((nx * ny) * sizeof(real_t));
+    linSys.iid = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.iid, 0.0, (nx * ny) * sizeof(real_t));
 
-    linSys.b = malloc((nx * ny) * sizeof(real_t));
+    linSys.b = (real_t *)malloc((nx * ny) * sizeof(real_t));
 
-    linSys.x = malloc((nx * ny) * sizeof(real_t));
+    linSys.x = (real_t *)malloc((nx * ny) * sizeof(real_t));
     memset(linSys.x, 0.0, (nx * ny) * sizeof(real_t));
 
     linSys.nx = nx;
@@ -68,39 +68,28 @@ void setLinearSystem(linearSystem *linSys) {
     }
 
     // Superior diagonal.
-    for (int j = 0; j < linSys->ny; j++) {
-        for (int i = 1; i < linSys->nx - 1; i++) {
-            linSys->sd[j * linSys->nx + i] = -sqrHy * (2 + hx);
+    for (int k = 0; k < linSys->nx * linSys->ny; k++) {
+        if ((k + 1) % linSys->nx != 0) {
+            linSys->sd[k] = sqrHy * (hx - 2);
         }
     }
 
     // Main diagonal
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-        linSys->md[i] = (4 * sqrHy) * (1 + sqrHx + 2 * SQR_PI * sqrHx);
+        linSys->md[i] = 4 * (sqrHy + sqrHx + 2 * SQR_PI * sqrHx * sqrHy);
     }
 
     // Inferior diagonal
-    for (int j = 0; j < linSys->ny; j++) {
-        for (int i = 1; i < linSys->nx - 1; i++) {
-            linSys->id[j * linSys->nx + i] = sqrHy * (hx - 2);
+    for (int k = 0; k < linSys->nx * linSys->ny; k++) {
+        if (k % linSys->nx != 0) {
+            linSys->id[k] = sqrHy * (-2 - hx);
         }
     }
 
     // Inferior inferior diagonal
     for (int i = linSys->nx; i < linSys->nx * linSys->ny; i++) {
-        linSys->iid[i] = -sqrHx * (2 + hy);
+        linSys->iid[i] = sqrHx * (-2 - hy);
     }
-
-    // Debug print.
-    // printf("SUPERIOR\n");
-    // for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-    //     printf("%lf\n", linSys->sd[i]);
-    // }
-
-    // printf("\nINFERIOR\n");
-    // for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-    //     printf("%lf\n", linSys->id[i]);
-    // }
 
     // ------------------------------------------------ FILL B ARRAY ------------------------------------------------
 
@@ -109,18 +98,23 @@ void setLinearSystem(linearSystem *linSys) {
     for (int j = 1; j <= linSys->ny; j++) {
         for (int i = 1; i <= linSys->nx; i++) {
             linSys->b[idxB] = (2 * sqrHx * sqrHy) * X_Y_FUNCTION(0 + i * hx, 0 + j * hy);
+
+            // Bottom edge of the mesh.
             if (j == 1) {
-                linSys->b[idxB] -= sin(2 * M_PI * (M_PI - i)) * sinh(SQR_PI);
+                linSys->b[idxB] -= (sin(2 * M_PI * (M_PI - i * hx)) * sinh(SQR_PI)) * (sqrHx * (-2 - hy));
             }
 
+            // Left edge of the mesh (zero).
             if (i == 1) {
                 linSys->b[idxB] -= 0;
             }
 
+            // Upper edge of the mesh.
             if (j == linSys->ny) {
-                linSys->b[idxB] -= sin(2 * M_PI * i) * sinh(SQR_PI);
+                linSys->b[idxB] -= (sin(2 * M_PI * i * hx) * sinh(SQR_PI)) * (sqrHx * (hy - 2));
             }
 
+            // Right edge of the mesh (zero).
             if (i == linSys->nx) {
                 linSys->b[idxB] -= 0;
             }
@@ -137,8 +131,9 @@ void setLinearSystem(linearSystem *linSys) {
  * @return real_t
  */
 real_t l2Norm(linearSystem *linSys) {
-    real_t *aux = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+    real_t *aux = (real_t *)malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
+    // Copying array "b" to an "aux" array.
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
         aux[i] = linSys->b[i];
     }
@@ -229,12 +224,10 @@ void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *outp
  * @param it Number of max iterations.
  */
 void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
-    real_t bk, itTime, *arrayL2Norm, acumItTime, *arrayResidue;
+    real_t bk, itTime, *arrayL2Norm, acumItTime;
 
-    int k = 1, i;
     acumItTime = 0.0;
-    arrayL2Norm = malloc(it * sizeof(real_t));
-    arrayResidue = malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+    arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
 
     for (int k = 0; k < it; k++) {
         itTime = timestamp();
@@ -245,7 +238,7 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
                 bk -= linSys->id[i] * linSys->x[i - 1];
             }
 
-            if (i + 1 < linSys->nx * linSys->ny) {
+            if (i + 1 < (linSys->nx * linSys->ny) - 1) {
                 bk -= linSys->sd[i] * linSys->x[i + 1];
             }
 
@@ -253,16 +246,14 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
                 bk -= linSys->iid[i] * linSys->x[i - linSys->nx];
             }
 
-            if (i + linSys->nx < linSys->nx * linSys->ny) {
+            if (i + linSys->nx < (linSys->nx * linSys->ny) - 1) {
                 bk -= linSys->ssd[i] * linSys->x[i + linSys->nx];
             }
 
-            linSys->x[i] = bk;
-            linSys->x[i] /= linSys->md[i];
+            linSys->x[i] = bk / linSys->md[i];
         }
 
-        acumItTime += timestamp() - itTime;  //timestamp accumulator
-
+        acumItTime += timestamp() - itTime;
         arrayL2Norm[k] = l2Norm(linSys);
     }
 
