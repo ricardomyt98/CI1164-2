@@ -19,7 +19,7 @@ DOXYGEN_HTML = ${_DOC}/html
 COMPILE_OBJ = -c
 CFLAGS = -Wall -Ilib -std=gnu99 -lm $(OPTIMIZE_FLAGS) $(LIKWID_FLAGS)
 LIKWID_FLAGS = -I/home/soft/likwid/include -L/home/soft/likwid/lib -I/usr/local/include -L/usr/local/lib -llikwid -DLIKWID_PERFMON
-OPTIMIZE_FLAGS = -O3 -march=native -mavx
+OPTIMIZE_FLAGS = -O3 -mavx -march=native
 SRC_FILES = partialDifferential utils pdeSolver
 OBJECTS = $(foreach src, $(SRC_FILES), ${_OBJ}/$(src).o)
 EXEC = pdeSolver
