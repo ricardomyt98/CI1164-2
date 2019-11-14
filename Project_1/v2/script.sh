@@ -19,24 +19,33 @@ array=(32 50 64)
 # [L3].
 for nx_ny in ${array[*]}
 do
-    printf "%s " $nx_ny >> ./likwidPerformance/L3.dat
-    likwid-perfctr -m -f -g L3 -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L3 bandwidth" | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L3.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/L3_Gauss_Seidel_Likwid_Performance.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/L3_L2Norm_Likwid_Performance.dat
+    likwid-perfctr -m -f -g L3 -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L3 bandwidth" | head -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L3_Gauss_Seidel_Likwid_Performance.dat
+    likwid-perfctr -m -f -g L3 -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L3 bandwidth" | tail -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L3_L2Norm_Likwid_Performance.dat
 done
 
 # [L2CACHE].
 for nx_ny in ${array[*]}
 do
-    printf "%s " $nx_ny >> ./likwidPerformance/L2_CACHE.dat
-    likwid-perfctr -m -f -g L2CACHE -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L2 miss ratio" | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L2_CACHE.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/L2_CACHE_Gauss_Seidel_Likwid_Performance.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/L2_CACHE_L2Norm_Likwid_Performance.dat
+    likwid-perfctr -m -f -g L2CACHE -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L2 miss ratio" | head -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L2_CACHE_Gauss_Seidel_Likwid_Performance.dat
+    likwid-perfctr -m -f -g L2CACHE -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "L2 miss ratio" | tail -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/L2_CACHE_L2Norm_Likwid_Performance.dat
 done
 
 # [FLOPS_DP].
 for nx_ny in ${array[*]}
 do
-    printf "%s " $nx_ny >> ./likwidPerformance/DP.dat
-    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "DP MFLOP\/s" | head -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/DP.dat
-    printf "%s " $nx_ny >> ./likwidPerformance/AVX_DP.dat
-    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "AVX DP MFLOP\/s" | grep -o -P "[0-9]+" >> ./likwidPerformance/AVX_DP.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/DP_MFLOPs_L2Norm_Likwid_Performance.dat
+    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida  | grep -P "^[^\w]+DP MFLOP" | head -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
+    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida  | grep -P "^[^\w]+DP MFLOP" | tail -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/DP_MFLOPs_L2Norm_Likwid_Performance.dat
+    
+    printf "%s " $nx_ny >> ./likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
+    printf "%s " $nx_ny >> ./likwidPerformance/AVX_DP_MFLOPs_L2Norm_Likwid_Performance.dat
+    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "AVX DP MFLOP\/s" | head -1 | grep -o -P "[0-9]+" >> ./likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
+    likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "AVX DP MFLOP\/s" | tail -1 | grep -o -P "[0-9]+" >> ./likwidPerformance/AVX_DP_MFLOPs_L2Norm_Likwid_Performance.dat
 done
 
 # Set the processor frequency.

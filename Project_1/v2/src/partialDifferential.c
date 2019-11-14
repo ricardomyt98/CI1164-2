@@ -1,8 +1,8 @@
+#include <likwid.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <likwid.h>
 
 #include "partialDifferential.h"
 #include "utils.h"
@@ -256,9 +256,9 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
         }
 
         acumItTime += timestamp() - itTime;
-        LIKWID_MARKER_START("l2_Norm_Likwid_Performance");
+        LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
         arrayL2Norm[k] = l2Norm(linSys);
-        LIKWID_MARKER_STOP("l2_Norm_Likwid_Performance");
+        LIKWID_MARKER_STOP("L2_Norm_Likwid_Performance");
     }
     LIKWID_MARKER_STOP("Gauss_Seidel_Likwid_Performance");
 
