@@ -1,13 +1,15 @@
+#include <likwid.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "partialDifferential.h"
 
 int main(int argc, char *argv[]) {
     int nx, ny, it, arg;
     char *outputFileName;
     FILE *outputFile = NULL;
+
+    LIKWID_MARKER_INIT;
 
     nx = ny = it = 0;
 
@@ -48,6 +50,8 @@ int main(int argc, char *argv[]) {
 
         return -1;
     }
+
+    LIKWID_MARKER_CLOSE;
 
     return 0;
 }

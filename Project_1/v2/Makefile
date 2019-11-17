@@ -26,7 +26,6 @@ EXEC = pdeSolver
 DOXYGEN_COMPILED_FILES = ${DOXYGEN_HTML} ${_DOC}/latex
 LIKWID_COMPILED_FILES = ${_LIK}/*
 
-
 # Default rule
 all: ${EXEC}
 
@@ -53,7 +52,7 @@ ${_OBJ}/%.o: ${_SRC}/%.c
 clean: clean_files clean_doxygen clean_likwid
 
 clean_files:
-	${FILE_RM} ${OBJECTS} ${EXEC} gmon.out
+	${FILE_RM} ${OBJECTS} ${EXEC} gmon.out arquivo_saida
 
 clean_doxygen:
 	${FOLDER_RM} ${DOXYGEN_COMPILED_FILES} Documentation.html

@@ -1,3 +1,4 @@
+#include <likwid.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -229,6 +230,7 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
     acumItTime = 0.0;
     arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
 
+    LIKWID_MARKER_START("Gauss_Seidel_Likwid_Performance");
     for (int k = 0; k < it; k++) {
         itTime = timestamp();
         for (int i = 0; i < linSys->nx * linSys->ny; i++) {
@@ -254,8 +256,11 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
         }
 
         acumItTime += timestamp() - itTime;
+        LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
         arrayL2Norm[k] = l2Norm(linSys);
+        LIKWID_MARKER_STOP("L2_Norm_Likwid_Performance");
     }
+    LIKWID_MARKER_STOP("Gauss_Seidel_Likwid_Performance");
 
     printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
 }
