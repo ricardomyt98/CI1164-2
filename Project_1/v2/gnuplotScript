@@ -3,15 +3,15 @@ set xlabel 'Nx and Ny length'
 set ylabel 'Performance Data'
 set term postscript eps enhanced "Helvetica" 24
 set output './likwidPerformance/DP_MFLOPs.eps'
-plot './likwidPerformance/DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/DP_MFLOPs_L2Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
+plot './likwidPerformance/DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/DP_MFLOPs_L2_Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
 
 set title 'AVX DP MFLOPs Performance Chart'
 set output './likwidPerformance/AVX_DP_MFLOPs.eps'
-plot './likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/AVX_DP_MFLOPs_L2Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
+plot './likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/AVX_DP_MFLOPs_L2_Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
 
 set title 'L2 CACHE Performance Chart'
 set output './likwidPerformance/L2_CACHE.eps'
-plot './likwidPerformance/L2_CACHE_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/L2_CACHE_L2Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
+plot './likwidPerformance/L2_CACHE_Gauss_Seidel_Likwid_Performance.dat' with lines title 'Gauss Seidel', './likwidPerformance/L2_CACHE_L2_Norm_Likwid_Performance.dat' with lines title 'L2 Norm'
 
 set title 'L3 Performance Chart'
 set output './likwidPerformance/L3.eps'
