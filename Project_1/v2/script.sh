@@ -11,8 +11,8 @@ echo "performance" > /sys/devices/system/cpu/cpufreq/policy3/scaling_governor
 # Cleaning up files.
 rm -rf ./likwidPerformance/*
 
-array=(32 50 64)
-# array=(32 50 64 100 128 200 256 300 400 512 1000 1024 2000 2048 3000 4000 4096 5000 10000)
+# array=(32 50 64)
+array=(32 50 64 100 128 200 256 300 400 512 1000 1024 2000 2048 3000 4000 4096 5000 10000)
 
 # Get the processor topology.
 # likwid-topology -g -c
