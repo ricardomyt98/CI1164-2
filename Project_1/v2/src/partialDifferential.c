@@ -168,6 +168,40 @@ real_t l2Norm(linearSystem *linSys) {
     return sqrt(result);
 }
 
+// real_t l2Norm(linearSystem *linSys) {
+//     real_t *aux = (real_t *)malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+//     int N, i = 0;
+//     N = linSys->nx * linSys->ny - 2;
+//     // Copying array "b" to an "aux" array.
+//     for (int j = 0; j < linSys->nx * linSys->ny; j++) {
+//         aux[j] = linSys->b[j];
+//     }
+
+//     aux[i] -= ((linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) - (linSys->md[i] * linSys->x[i]);
+//     i++;
+//     aux[i] -= ((linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - (linSys->md[i] * linSys->x[i]);
+//     for (i = 2; i < N % 2 ; i+=2) {
+//         aux[i] -= ((linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i -1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - (linSys->md[i] * linSys->x[i]);
+//         aux[i + 1] -= ((linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i+1] * linSys->x[i - linSys->nx + 1])) - (linSys->md[i+1] * linSys->x[i+1]);
+//         //aux[i + 2] -= ((linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2])) - (linSys->md[i+2] * linSys->x[i+2]);
+//         //aux[i + 3] -= ((linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3])) - (linSys->md[i+3] * linSys->x[i+3]);
+//     }
+//     for (; i < N; i++) {
+//         aux[i] -= ((linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i -1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - (linSys->md[i] * linSys->x[i]);
+//     }
+//     aux[i] -= ((linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) -  (linSys->sd[i] * linSys->x[i + 1])) - (linSys->md[i] * linSys->x[i]);
+//     i++;
+//     aux[i] -= ((linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - (linSys->md[i] * linSys->x[i]);
+
+//     real_t result = 0.0;
+
+//     for (int k = 0; k < linSys->nx * linSys->ny; k++) {
+//         result += aux[k] * aux[k];
+//     }
+
+//     return sqrt(result);
+// }
+
 /**
  * @brief Function to print the discretization matrix.
  *
@@ -225,40 +259,38 @@ void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *outp
  * @param it Number of max iterations.
  */
 void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
-    real_t bk, itTime, *arrayL2Norm, acumItTime;
-
+    real_t itTime, *arrayL2Norm, acumItTime;
+    int i, N, k = 0;
     acumItTime = 0.0;
     arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
 
     LIKWID_MARKER_START("Gauss_Seidel_Likwid_Performance");
-    for (int k = 0; k < it; k++) {
+    while (k < it) {
         itTime = timestamp();
-        for (int i = 0; i < linSys->nx * linSys->ny; i++) {
-            bk = linSys->b[i];
+        i = 0;
+        N = linSys->nx * linSys->ny - 2;  // fixo
 
-            if (i - 1 >= 0) {
-                bk -= linSys->id[i] * linSys->x[i - 1];
-            }
-
-            if (i + 1 < (linSys->nx * linSys->ny) - 1) {
-                bk -= linSys->sd[i] * linSys->x[i + 1];
-            }
-
-            if (i - linSys->nx >= 0) {
-                bk -= linSys->iid[i] * linSys->x[i - linSys->nx];
-            }
-
-            if (i + linSys->nx < (linSys->nx * linSys->ny) - 1) {
-                bk -= linSys->ssd[i] * linSys->x[i + linSys->nx];
-            }
-
-            linSys->x[i] = bk / linSys->md[i];
+        linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) / linSys->md[i];
+        i++;
+        linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+        for (i = 2; i < N % 2; i += 2) {
+            linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+            linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1])) / linSys->md[i + 1];
+            //linSys->x[i + 2] = (linSys->b[i+2] - (linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx+2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2])) / linSys->md[i + 2];
+            //linSys->x[i + 3] = (linSys->b[i+3] - (linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx+3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3])) / linSys->md[i + 3];
         }
+        for (; i < N; i++) {
+            linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+        }
+        linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+        i++;
+        linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
 
         acumItTime += timestamp() - itTime;
         LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
         arrayL2Norm[k] = l2Norm(linSys);
         LIKWID_MARKER_STOP("L2_Norm_Likwid_Performance");
+        k++;
     }
     LIKWID_MARKER_STOP("Gauss_Seidel_Likwid_Performance");
 

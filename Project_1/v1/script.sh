@@ -11,8 +11,8 @@ echo "performance" > /sys/devices/system/cpu/cpufreq/policy3/scaling_governor
 # Cleaning up files.
 rm -rf ./likwidPerformance/*
 
-array=(32 50 64)
-# array=(32 50 64 100 128 200 256 300 400 512 1000 1024 2000 2048 3000 4000 4096 5000 10000)
+# array=(32 50 64)
+array=(32 50 64 100 128 200 256 300 400 512 1000 1024 2000 2048 3000 4000 4096 5000)
 
 # Get the processor topology.
 # likwid-topology -g -c
@@ -43,7 +43,7 @@ do
     printf "%s " $nx_ny >> ./likwidPerformance/DP_MFLOPs_L2_Norm_Likwid_Performance.dat
     likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida  | grep -P "^[^\w]+DP MFLOP" | head -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
     likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida  | grep -P "^[^\w]+DP MFLOP" | tail -1 | grep -o -P "[0-9]+\.[0-9]+" >> ./likwidPerformance/DP_MFLOPs_L2_Norm_Likwid_Performance.dat
-    
+
     printf "%s " $nx_ny >> ./likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat
     printf "%s " $nx_ny >> ./likwidPerformance/AVX_DP_MFLOPs_L2_Norm_Likwid_Performance.dat
     likwid-perfctr -m -f -g FLOPS_DP -C 0 ./pdeSolver -nx $nx_ny -ny $nx_ny -i 10 -o arquivo_saida | grep "AVX DP MFLOP\/s" | head -1 | grep -o -P "[0-9]+" >> ./likwidPerformance/AVX_DP_MFLOPs_Gauss_Seidel_Likwid_Performance.dat

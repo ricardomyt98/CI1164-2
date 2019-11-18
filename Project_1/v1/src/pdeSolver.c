@@ -10,7 +10,6 @@ int main(int argc, char *argv[]) {
     FILE *outputFile = NULL;
 
     LIKWID_MARKER_INIT;
-
     nx = ny = it = 0;
 
     for (arg = 1; arg < argc; arg++) {
@@ -48,10 +47,10 @@ int main(int argc, char *argv[]) {
     } else {
         fprintf(stderr, "Argumentos incorretos. O formato deve ser: \"pdeSolver -nx <Nx> -ny <Ny> -i <maxIter> -o arquivo_saida\".\n");
 
+        LIKWID_MARKER_CLOSE;
         return -1;
     }
 
     LIKWID_MARKER_CLOSE;
-
     return 0;
 }
