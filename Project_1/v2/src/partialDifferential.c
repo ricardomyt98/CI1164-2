@@ -131,7 +131,7 @@ void setLinearSystem(linearSystem *linSys) {
  * @param linSys Linear system struct.
  * @return real_t
  */
-real_t l2Norm(linearSystem *linSys) {
+real_t l2Norm(linearSystem *linSys) {  // Retirado os if dos for.
     real_t *temp = (real_t *)malloc((linSys->nx * linSys->ny) * sizeof(real_t));
 
     int i = 0;
@@ -162,6 +162,118 @@ real_t l2Norm(linearSystem *linSys) {
 
     return sqrt(result);
 }
+
+// real_t l2Norm(linearSystem *linSys) {  // Loop unroll de 2.
+//     real_t *temp = (real_t *)malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+//     int aux, i = 0;
+
+//     // primeira equação fora do laço
+//     temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) - linSys->md[i] * linSys->x[i];
+
+//     // for  ate o inicio da diagonal inferior inferior
+//     aux = linSys->nx;
+//     aux -= aux % 2;
+//     for (i = 1; i < aux; i += 2) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i])) - linSys->md[i + 1] * linSys->x[i + 1];
+//     }
+//     for (; i < linSys->nx; i++) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // equações com todas as diagonais
+//     aux = linSys->nx * linSys->ny - linSys->nx;
+//     aux -= aux % 2;
+//     for (; i < aux; i += 2) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1])) - linSys->md[i + 1] * linSys->x[i + 1];
+//     }
+//     for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // for ate o final da diagonal inferior inferior
+//     aux = linSys->nx * linSys->ny - 1;
+//     aux -= aux % 2;
+//     for (; i < aux; i += 2) {
+//         temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->sd[i + 1] * linSys->x[i + 2])) - linSys->md[i + 1] * linSys->x[i + 1];
+//     }
+//     for (; i < (linSys->nx * linSys->ny - 1); i++) {
+//         temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // ultima equação fora do laço
+//     temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+
+//     real_t result = 0.0;
+
+//     // raiz dos quadrados dos residuos
+//     for (i = 0; i < aux; i++) {
+//         result += temp[i] * temp[i];
+//     }
+
+//     return sqrt(result);
+// }
+
+// real_t l2Norm(linearSystem *linSys) {  // Loop unroll de 4.
+//     real_t *temp = (real_t *)malloc((linSys->nx * linSys->ny) * sizeof(real_t));
+//     int aux, i = 0;
+
+//     // primeira equação fora do laço
+//     temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) - linSys->md[i] * linSys->x[i];
+
+//     // for  ate o inicio da diagonal inferior inferior
+//     aux = linSys->nx;
+//     aux -= aux % 4;
+//     for (i = 1; i < aux; i += 4) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i])) - linSys->md[i + 1] * linSys->x[i + 1];
+//         temp[i + 2] = (linSys->b[i + 2] - (linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1])) - linSys->md[i + 2] * linSys->x[i + 2];
+//         temp[i + 3] = (linSys->b[i + 3] - (linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2])) - linSys->md[i + 3] * linSys->x[i + 3];
+//     }
+//     for (; i < linSys->nx; i++) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // equações com todas as diagonais
+//     aux = linSys->nx * linSys->ny - linSys->nx;
+//     aux -= aux % 4;
+//     for (; i < aux; i += 4) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1])) - linSys->md[i + 1] * linSys->x[i + 1];
+//         temp[i + 2] = (linSys->b[i + 2] - (linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2])) - linSys->md[i + 2] * linSys->x[i + 2];
+//         temp[i + 3] = (linSys->b[i + 3] - (linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3])) - linSys->md[i + 3] * linSys->x[i + 3];
+//     }
+//     for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
+//         temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // for ate o final da diagonal inferior inferior
+//     aux = linSys->nx * linSys->ny - 1;
+//     aux -= aux % 4;
+//     for (; i < aux; i += 4) {
+//         temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
+//         temp[i + 1] = (linSys->b[i + 1] - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->sd[i + 1] * linSys->x[i + 2])) - linSys->md[i + 1] * linSys->x[i + 1];
+//         temp[i + 2] = (linSys->b[i + 2] - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->sd[i + 2] * linSys->x[i + 3])) - linSys->md[i + 2] * linSys->x[i + 2];
+//         temp[i + 3] = (linSys->b[i + 3] - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->sd[i + 3] * linSys->x[i + 4])) - linSys->md[i + 3] * linSys->x[i + 3];
+//     }
+//     for (; i < (linSys->nx * linSys->ny - 1); i++) {
+//         temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
+//     }
+
+//     // ultima equação fora do laço
+//     temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+
+//     real_t result = 0.0;
+
+//     // raiz dos quadrados dos residuos
+//     for (i = 0; i < aux; i++) {
+//         result += temp[i] * temp[i];
+//     }
+
+//     return sqrt(result);
+// }
 
 /**
  * @brief Function to print the discretization matrix.
@@ -219,7 +331,7 @@ void printGaussSeidelParameters(real_t avrgTime, real_t *arrayL2Norm, FILE *outp
  * @param linSys Linear system struct.
  * @param it Number of max iterations.
  */
-void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
+void gaussSeidel(linearSystem *linSys, int it, FILE *output) {  // Retirado os if dos for.
     real_t itTime, *arrayL2Norm, acumItTime;
     int i, k = 0;
     acumItTime = 0.0;
@@ -258,3 +370,127 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
 
     printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
 }
+
+// void gaussSeidel(linearSystem *linSys, int it, FILE *output) {  // Loop unroll de 2.
+//     real_t itTime, *arrayL2Norm, acumItTime;
+//     int i, aux, k = 0;
+//     acumItTime = 0.0;
+//     arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
+
+//     LIKWID_MARKER_START("Gauss_Seidel_Likwid_Performance");
+//     while (k < it) {
+//         itTime = timestamp();
+//         i = 0;
+
+//         // primeira equação fora do laço
+//         linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) / linSys->md[i];
+
+//         // for  ate o inicio da diagonal inferior inferior
+//         aux = linSys->nx;
+//         aux -= aux % 2;
+//         for (i = 1; i < aux; i += 2) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i])) / linSys->md[i + 1];
+//         }
+//         for (; i < linSys->nx; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+//         }
+
+//         // equações com todas as diagonais
+//         aux = linSys->nx * linSys->ny - linSys->nx;
+//         aux -= aux % 2;
+//         for (; i < aux; i += 2) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1])) / linSys->md[i + 1];
+//         }
+//         for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+//         }
+//         // for ate o final da diagonal inferior inferior
+//         aux = linSys->nx * linSys->ny - 1;
+//         aux -= aux % 2;
+//         for (; i < aux; i += 2) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->sd[i + 1] * linSys->x[i + 2])) / linSys->md[i + 1];
+//         }
+//         for (; i < linSys->nx * linSys->ny - 1; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+//         }
+//         // ultima equação fora do laço
+//         linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+
+//         acumItTime += timestamp() - itTime;
+//         LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
+//         arrayL2Norm[k] = l2Norm(linSys);
+//         LIKWID_MARKER_STOP("L2_Norm_Likwid_Performance");
+//         k++;
+//     }
+//     LIKWID_MARKER_STOP("Gauss_Seidel_Likwid_Performance");
+
+//     printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
+// }
+
+// void gaussSeidel(linearSystem *linSys, int it, FILE *output) {  // Loop unroll de 4.
+//     real_t itTime, *arrayL2Norm, acumItTime;
+//     int i, aux, k = 0;
+//     acumItTime = 0.0;
+//     arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
+
+//     LIKWID_MARKER_START("Gauss_Seidel_Likwid_Performance");
+//     while (k < it) {
+//         itTime = timestamp();
+//         i = 0;
+
+//         // primeira equação fora do laço
+//         linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) / linSys->md[i];
+
+//         // for  ate o inicio da diagonal inferior inferior
+//         aux = linSys->nx;
+//         aux -= aux % 4;
+//         for (i = 1; i < aux; i += 4) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i])) / linSys->md[i + 1];
+//             linSys->x[i + 2] = (linSys->b[i + 2] - (linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1])) / linSys->md[i + 2];
+//             linSys->x[i + 3] = (linSys->b[i + 3] - (linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2])) / linSys->md[i + 3];
+//         }
+//         for (; i < linSys->nx; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+//         }
+
+//         // equações com todas as diagonais
+//         aux = linSys->nx * linSys->ny - linSys->nx;
+//         aux -= aux % 4;
+//         for (; i < aux; i += 4) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->sd[i + 1] * linSys->x[i + 2]) - (linSys->ssd[i + 1] * linSys->x[i + linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1])) / linSys->md[i + 1];
+//             linSys->x[i + 2] = (linSys->b[i + 2] - (linSys->sd[i + 2] * linSys->x[i + 3]) - (linSys->ssd[i + 2] * linSys->x[i + linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2])) / linSys->md[i + 2];
+//             linSys->x[i + 3] = (linSys->b[i + 3] - (linSys->sd[i + 3] * linSys->x[i + 4]) - (linSys->ssd[i + 3] * linSys->x[i + linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3])) / linSys->md[i + 3];
+//         }
+//         for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->iid[i] * linSys->x[i - linSys->nx])) / linSys->md[i];
+//         }
+//         // for ate o final da diagonal inferior inferior
+//         aux = linSys->nx * linSys->ny - 1;
+//         aux -= aux % 4;
+//         for (; i < aux; i += 4) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+//             linSys->x[i + 1] = (linSys->b[i + 1] - (linSys->iid[i + 1] * linSys->x[i - linSys->nx + 1]) - (linSys->id[i + 1] * linSys->x[i]) - (linSys->sd[i + 1] * linSys->x[i + 2])) / linSys->md[i + 1];
+//             linSys->x[i + 2] = (linSys->b[i + 2] - (linSys->iid[i + 2] * linSys->x[i - linSys->nx + 2]) - (linSys->id[i + 2] * linSys->x[i + 1]) - (linSys->sd[i + 2] * linSys->x[i + 3])) / linSys->md[i + 2];
+//             linSys->x[i + 3] = (linSys->b[i + 3] - (linSys->iid[i + 3] * linSys->x[i - linSys->nx + 3]) - (linSys->id[i + 3] * linSys->x[i + 2]) - (linSys->sd[i + 3] * linSys->x[i + 4])) / linSys->md[i + 3];
+//         }
+//         for (; i < linSys->nx * linSys->ny - 1; i++) {
+//             linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+//         }
+//         // ultima equação fora do laço
+//         linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+
+//         acumItTime += timestamp() - itTime;
+//         LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
+//         arrayL2Norm[k] = l2Norm(linSys);
+//         LIKWID_MARKER_STOP("L2_Norm_Likwid_Performance");
+//         k++;
+//     }
+//     LIKWID_MARKER_STOP("Gauss_Seidel_Likwid_Performance");
+
+//     printGaussSeidelParameters(acumItTime / (it), arrayL2Norm, output, it);
+// }
