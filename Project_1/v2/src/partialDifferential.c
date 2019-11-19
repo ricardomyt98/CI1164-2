@@ -138,10 +138,10 @@ real_t l2Norm(linearSystem *linSys) {
 
     // primeira equação fora do laço
     temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) - linSys->md[i] * linSys->x[i];
-    
+
     // for  ate o inicio da diagonal inferior inferior
     for (i = 1; i < linSys->nx; i++) {
- 		temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
+        temp[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
     }
     // equações com todas as diagonais
     for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
@@ -149,17 +149,17 @@ real_t l2Norm(linearSystem *linSys) {
     }
     // for ate o final da diagonal inferior inferior
     for (; i < (linSys->nx * linSys->ny - 1); i++) {
-    	 temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) -  (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
+        temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) - linSys->md[i] * linSys->x[i];
     }
     // ultima equação fora do laço
     temp[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) - linSys->md[i] * linSys->x[i];
 
-       real_t result = 0.0;
+    real_t result = 0.0;
 
     for (int i = 0; i < linSys->nx * linSys->ny; i++) {
         result += temp[i] * temp[i];
     }
-    
+
     return sqrt(result);
 }
 
@@ -226,16 +226,16 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
     arrayL2Norm = (real_t *)malloc(it * sizeof(real_t));
 
     LIKWID_MARKER_START("Gauss_Seidel_Likwid_Performance");
-     while (k < it) {
+    while (k < it) {
         itTime = timestamp();
         i = 0;
 
         // primeira equação fora do laço
         linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx])) / linSys->md[i];
-        
+
         // for  ate o inicio da diagonal inferior inferior
         for (i = 1; i < linSys->nx; i++) {
-     		linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
+            linSys->x[i] = (linSys->b[i] - (linSys->sd[i] * linSys->x[i + 1]) - (linSys->ssd[i] * linSys->x[i + linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
         }
         // equações com todas as diagonais
         for (; i < linSys->nx * linSys->ny - linSys->nx; i++) {
@@ -243,11 +243,11 @@ void gaussSeidel(linearSystem *linSys, int it, FILE *output) {
         }
         // for ate o final da diagonal inferior inferior
         for (; i < (linSys->nx * linSys->ny - 1); i++) {
-        	 linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) -  (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
+            linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1]) - (linSys->sd[i] * linSys->x[i + 1])) / linSys->md[i];
         }
         // ultima equação fora do laço
         linSys->x[i] = (linSys->b[i] - (linSys->iid[i] * linSys->x[i - linSys->nx]) - (linSys->id[i] * linSys->x[i - 1])) / linSys->md[i];
-        
+
         acumItTime += timestamp() - itTime;
         LIKWID_MARKER_START("L2_Norm_Likwid_Performance");
         arrayL2Norm[k] = l2Norm(linSys);
