@@ -1,6 +1,6 @@
 #!/bin/bash
 
-versionArray=(v1 v2)
+versionArray=(v2)
 
 # Deleting files.
 for version in ${versionArray[@]};
